@@ -8,15 +8,21 @@
 NarrowItDownController.$inject = ["MenuSearchService"];
 function NarrowItDownController(menuSearchService) {
 	var controller = this;
-	var found = [];
+	controller.items = menuSearchService.getAllItems();
+	controller.searchCriteria = "";
 
-	controller.getMatchedMenuItems = function (searchCriteria) {
+	controller.getMatchedMenuItems = function () {
+		console.log("searchCriteria", controller.searchCriteria);
+		menuSearchService.getCategoryBySearchCriteria(controller.searchCriteria).then(function (myItems) {
+			controller.items = myItems;
+		});	
+	};
 
-		menuSearchService.getCategoryBySearchCriteria(searchCriteria).then(function (myItems) {
-			console.log("found items", myItems);	
-		});
-		
-	}
+	controller.onRemoveFoundItem = function (index) {
+		console.log("Original items", menuSearchService.getAllItems());
+		menuSearchService.removeItem(index);	
+		console.log("One less", menuSearchService.getAllItems());
+	};
 }
 
 MenuSearchService.$inject = ["$q","$http", "BaseApiUrl"];
@@ -27,13 +33,13 @@ function MenuSearchService($q, $http, baseApiUrl) {
 	service.getCategoryBySearchCriteria = function (searchCriteria) {
 		var deferred = $q.defer();
 
-		//TODO here there are some doubts
-		// params: searchCriteria
 		$http({
 			url: baseApiUrl
 		}).then(function (response) {
-			//service.allItems = response.data;
-			//return service.allItems;
+			var result = response.data;
+			result.menu_items.filter(function (x) {
+				return x.name.indexOf(searchCriteria) > -1;
+			});
 			deferred.resolve(response.data);
 		}, function (error) {
 			console.error(error);
@@ -41,13 +47,28 @@ function MenuSearchService($q, $http, baseApiUrl) {
 		});
 
 		return deferred.promise;
-	}
+	};
+
+	service.removeItem = function (index) {
+		service.allItems.splice(index,1);
+	};
+
+	service.getAllItems = function () {
+		return service.allItems;
+	};
 }
 
 function FoundItemsDirective() {
+	//onRemove:"&"
 	var ddo = {
+		restrict: "E",
 		templateUrl: "templates/foundItems.html",
-		scope: {},
+		scope: {
+			foundItems: "<"
+		},
+		controller: NarrowItDownController,
+		controllerAs: "list",
+		bindToController: true
 	};
 
 	return ddo;
