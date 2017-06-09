@@ -1,7 +1,9 @@
-<h3>Items found</h3>
-<ul>
-	<li ng-repeat="item in list.foundItems">
-		{{ item.name }}
-		<button ng-click="list.onRemoveFoundItem({index: $index})">Delete it!</button>
-	</li>
-</ul>
+<div class="searchListContainer">
+	<h3>Items found</h3>
+	<ul class="searchList">
+		<li ng-repeat="item in list.foundItems">
+			{{ item.name }}
+			<button ng-click="list.onRemove({myIndex: $index})">Delete it!</button>
+		</li>
+	</ul>	
+</div>

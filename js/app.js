@@ -19,9 +19,7 @@ function NarrowItDownController(menuSearchService) {
 	};
 
 	controller.onRemoveFoundItem = function (index) {
-		console.log("Original items", menuSearchService.getAllItems());
 		menuSearchService.removeItem(index);	
-		console.log("One less", menuSearchService.getAllItems());
 	};
 }
 
@@ -36,11 +34,11 @@ function MenuSearchService($q, $http, baseApiUrl) {
 		$http({
 			url: baseApiUrl
 		}).then(function (response) {
-			var result = response.data;
-			result.menu_items.filter(function (x) {
-				return x.name.indexOf(searchCriteria) > -1;
+			var result = response.data.menu_items.filter(function (x) {
+				return x.name.toLowerCase().indexOf(searchCriteria.toLowerCase()) > -1;
 			});
-			deferred.resolve(response.data);
+			service.allItems = result;
+			deferred.resolve(result);
 		}, function (error) {
 			console.error(error);
 			deferred.reject();
@@ -64,7 +62,8 @@ function FoundItemsDirective() {
 		restrict: "E",
 		templateUrl: "templates/foundItems.html",
 		scope: {
-			foundItems: "<"
+			foundItems: "<", 
+			onRemove: "&"
 		},
 		controller: NarrowItDownController,
 		controllerAs: "list",
